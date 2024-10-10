@@ -15,11 +15,27 @@ def main():
     for input_filepath in file_paths:
         file_base = pathlib.Path(input_filepath).stem
         output_path = os.path.join(fasta_dir, (file_base + '.fna'))
-        genbank_to_fasta(input_gb=input_filepath, output_fasta=output_path)
+        extract_gene_loci(genbank_file=input_filepath, output_fasta=output_path)
 
-def genbank_to_fasta(input_gb, output_fasta):
-    with open(input_gb, "r") as gb_file, open(output_fasta, "w") as fa_file:
-        SeqIO.convert(gb_file, "genbank", fa_file, "fasta")
+
+def extract_gene_loci(genbank_file, output_fasta, feature_type="CDS"):
+    """
+    Extract gene loci from a GenBank file and write them to a FASTA file.
+
+    :param genbank_file: Input GenBank file path.
+    :param output_fasta: Output FASTA file path.
+    :param feature_type: Type of feature to extract (default is "CDS").
+    """
+    with open(genbank_file, "r") as gb_file, open(output_fasta, "w") as fasta_file:
+        for record in SeqIO.parse(gb_file, "genbank"):
+            for feature in record.features:
+                if feature.type == feature_type:
+                    # Extract the locus ID (if available) or use feature location
+                    locus_id = feature.qualifiers.get('locus_tag', ['unknown_locus'])[0]
+                    # Extract the sequence for the feature
+                    locus_seq = feature.extract(record.seq)
+                    # Write in FASTA format
+                    fasta_file.write(f">{locus_id}\n{str(locus_seq)}\n")
 
 def get_var_from_config(config_filename: str, varname: str):
     """Open config file and get specified variable.
