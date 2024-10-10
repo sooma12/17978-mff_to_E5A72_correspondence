@@ -14,7 +14,7 @@ def main():
 
     for input_filepath in file_paths:
         file_base = pathlib.Path(input_filepath).stem
-        output_path = os.path.join(fasta_dir, (file_base + '.fa'))
+        output_path = os.path.join(fasta_dir, (file_base + '.fna'))
         genbank_to_fasta(input_gb=input_filepath, output_fasta=output_path)
 
 def genbank_to_fasta(input_gb, output_fasta):
